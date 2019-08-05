@@ -1,0 +1,14 @@
+<items>
+    <item>
+        <name>ball</name>
+        <price>10</price>
+    </item>
+    <item>
+        <name>puck</name>
+        <price>5</price>
+    </item>
+    <item>
+        <name>baloon</name>
+        <price>1</price>
+    </item>
+</items>
