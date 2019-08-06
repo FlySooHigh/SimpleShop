@@ -11,5 +11,5 @@ public interface ItemRepo extends JpaRepository<Item, Long> {
     // FIXME: 04.08.2019 Добавить Optional
     Item findByItemName(String item);
 
-    boolean existsByItemNameAndCustomerCustomerId(String itemName, Long customerId);
+//    boolean existsByItemNameAndCustomersCustomerId(String itemName, Long customerId);
 }

@@ -41,5 +41,12 @@ public interface CustomerRepo extends JpaRepository<Customer, Long> {
     // FIXME: 04.08.2019 Сделать Optional
     Customer findByLoginName(String loggedInCustomer);
 
+    @Query(nativeQuery = true,
+    value = "SELECT COUNT(*) >= 1 " +
+            "FROM customer_item " +
+            "WHERE customer_customer_id = :customerId AND " +
+                  "boughtitems_item_id = :itemId")
+    boolean isBoughtItem(@Param("customerId") Long customerId, @Param("itemId") Long itemId);
+
 //    boolean findByLoginNameAndBoughtItems();
 }

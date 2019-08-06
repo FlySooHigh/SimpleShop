@@ -96,7 +96,6 @@ public class CustomerThread extends Thread {
                             int customerFunds = dataService.getCustomerFunds(loggedInCustomer);
                             int itemPrice = dataService.getItemPrice(itemName);
                             if (customerFunds >= itemPrice) {
-                                // FIXME: 05.08.2019 Сейчас нельзя купить дважды один и тот же предмет !
                                 dataService.buyItem(loggedInCustomer, itemName);
                                 out.println("Purchase is successful!");
                             } else {

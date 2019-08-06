@@ -87,31 +87,39 @@ public class ImportDataService {
     }
 
     @Transactional
-    public boolean buyItem(String loggedInCustomer, String itemName) {
+    public void buyItem(String loggedInCustomer, String itemName) {
         Customer customer = customerRepo.findByLoginName(loggedInCustomer);
         Item item = itemRepo.findByItemName(itemName);
-        item.setCustomer(customer);
-        itemRepo.save(item);
+//        item.getCustomers().add(customer);
+//        item.setCustomer(customer);
+//        itemRepo.save(item);
         customer.setAvailableFunds(customer.getAvailableFunds() - item.getItemPrice());
         customer.getBoughtItems().add(item);
         customerRepo.save(customer);
-        return false;
     }
 
     public boolean isInTheCustomerList(String loggedInCustomer, String itemName) {
         Customer byLoginName = customerRepo.findByLoginName(loggedInCustomer);
         Long customerId = byLoginName.getCustomerId();
-        return itemRepo.existsByItemNameAndCustomerCustomerId(itemName, customerId);
+        Item item = itemRepo.findByItemName(itemName);
+        Long itemId = item.getItemId();
+//        return itemRepo.existsByItemNameAndCustomersCustomerId(itemName, customerId);
+        return customerRepo.isBoughtItem(customerId, itemId);
+//        return itemRepo.existsByItemNameAndCustomersCustomerId(itemName, customerId);
     }
 
     @Transactional
     public void sellItem(String loggedInCustomer, String itemName) {
         Item item = itemRepo.findByItemName(itemName);
         int itemPrice = item.getItemPrice();
-        item.setCustomer(null);
-        itemRepo.save(item);
+//        item.setCustomer(null);
+
         Customer customer = customerRepo.findByLoginName(loggedInCustomer);
         customer.setAvailableFunds(customer.getAvailableFunds() + itemPrice);
+        customer.getBoughtItems().remove(item);
         customerRepo.save(customer);
+
+//        item.getCustomers().remove(customer);
+//        itemRepo.save(item);
     }
 }

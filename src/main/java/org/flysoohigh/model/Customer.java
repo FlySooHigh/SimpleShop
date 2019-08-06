@@ -1,6 +1,9 @@
 package org.flysoohigh.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.util.List;
@@ -21,7 +24,9 @@ public class Customer {
     @Column(name = "available_funds")
     private int availableFunds;
     // FIXME: 03.08.2019 Разобраться с фетчем!
-    @OneToMany(/*targetEntity = Item.class,*/ fetch = FetchType.EAGER, mappedBy = "customer")
+    // @ManyToMany позволяем одному игроку покупать несколько одинаковых предметов, если сделать @OneToMany,
+    // то при попытке купить второй такой же предмет летит эксепшен из-за нарушения уникальности ключа
+    @ManyToMany(/*targetEntity = Item.class,*/ fetch = FetchType.EAGER/*, mappedBy = "customer"*/)
 //    @JoinColumn(name = "item_id")
     @Column(name = "bought_items")
     private List<Item> boughtItems;
