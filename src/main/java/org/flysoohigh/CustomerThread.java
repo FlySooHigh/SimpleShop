@@ -98,7 +98,9 @@ public class CustomerThread extends Thread {
         }
         // логаутим юзера из БД, чтобы он не остался залогиненным при закрытии окна пользовательской сессии без команды logout
         finally {
-            dataService.logOut(loggedInCustomer);
+            if (!loggedInCustomer.isEmpty()) {
+                dataService.logOut(loggedInCustomer);
+            }
         }
     }
 
