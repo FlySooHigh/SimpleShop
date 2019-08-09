@@ -26,8 +26,8 @@ public class ServerThread {
         try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
             System.out.println("ServerSocket started");
             while (listening) {
-                System.out.println("New connection started");
                 new CustomerThread(serverSocket.accept(), serverContext).start();
+                System.out.println("New connection started");
             }
             System.out.println("ServerSocket stopped");
         } catch (IOException e) {
