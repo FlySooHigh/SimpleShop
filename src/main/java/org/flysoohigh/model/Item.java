@@ -28,7 +28,4 @@ public class Item {
     @XmlElement(name = "price")
     @Column(name = "item_price")
     private int itemPrice;
-//    @ManyToMany(mappedBy = "boughtItems", fetch = FetchType.EAGER)/*(targetEntity = Customer.class)*/
-//    @Column(name = "customers_id")
-//    private List<Customer> customers;
 }

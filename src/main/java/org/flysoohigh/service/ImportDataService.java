@@ -14,6 +14,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
 @Getter
@@ -28,19 +29,17 @@ public class ImportDataService {
         JAXBContext jaxbContext = JAXBContext.newInstance(Items.class);
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
         Items items = (Items) unmarshaller.unmarshal(new File("src\\main\\resources\\items.xml"));
-        for (Item item: items.getItems() ) {
+        for (Item item: items.getItems()) {
             itemRepo.save(item);
         }
     }
 
-    public void saveSomeCustomers(){
-        Customer zidan = new Customer(null, "zidan", 100, null, false);
-        Customer ovechkin = new Customer(null, "ovechkin", 50, null, false);
-        Customer vinnipuh = new Customer(null, "vinni", 5, null, false);
-
-        customerRepo.save(zidan);
-        customerRepo.save(ovechkin);
-        customerRepo.save(vinnipuh);
+    public void saveSomeCustomers() {
+        List<Customer> customers = Arrays.asList(
+                new Customer(null, "zidan", 100, null, false),
+                new Customer(null, "ovechkin", 50, null, false),
+                new Customer(null, "vinni", 5, null, false));
+        customerRepo.saveAll(customers);
     }
 
     public boolean isCustomer(String loginName) {
@@ -49,13 +48,6 @@ public class ImportDataService {
 
     public boolean isLoggedIn(String loginName) {
         return customerRepo.isLoggedIn(loginName);
-    }
-
-    public void test() {
-        List<Customer> all = customerRepo.findAll();
-        for (Customer customer:all) {
-            System.out.println(customer.toString());
-        }
     }
 
     @Transactional
@@ -72,7 +64,7 @@ public class ImportDataService {
         return customerRepo.findByLoginName(loggedInCustomer);
     }
 
-    public boolean isInTheList(String item) {
+    public boolean isInTheShopList(String item) {
         return itemRepo.existsByItemName(item);
     }
 
@@ -81,45 +73,38 @@ public class ImportDataService {
         return byLoginName.getAvailableFunds();
     }
 
-    public int getItemPrice(String item) {
-        Item byItemName = itemRepo.findByItemName(item);
-        return byItemName.getItemPrice();
+    public int getItemPrice(String itemName) {
+        return itemRepo.getItemPriceByItemName(itemName);
     }
 
     @Transactional
-    public void buyItem(String loggedInCustomer, String itemName) {
+    public void buyItem(String loggedInCustomer, String itemName, int itemPrice) {
         Customer customer = customerRepo.findByLoginName(loggedInCustomer);
         Item item = itemRepo.findByItemName(itemName);
-//        item.getCustomers().add(customer);
-//        item.setCustomer(customer);
-//        itemRepo.save(item);
-        customer.setAvailableFunds(customer.getAvailableFunds() - item.getItemPrice());
+        customer.setAvailableFunds(customer.getAvailableFunds() - itemPrice);
         customer.getBoughtItems().add(item);
         customerRepo.save(customer);
     }
 
     public boolean isInTheCustomerList(String loggedInCustomer, String itemName) {
-        Customer byLoginName = customerRepo.findByLoginName(loggedInCustomer);
-        Long customerId = byLoginName.getCustomerId();
+        Customer customer = customerRepo.findByLoginName(loggedInCustomer);
+        Long customerId = customer.getCustomerId();
         Item item = itemRepo.findByItemName(itemName);
         Long itemId = item.getItemId();
-//        return itemRepo.existsByItemNameAndCustomersCustomerId(itemName, customerId);
         return customerRepo.isBoughtItem(customerId, itemId);
-//        return itemRepo.existsByItemNameAndCustomersCustomerId(itemName, customerId);
     }
 
     @Transactional
     public void sellItem(String loggedInCustomer, String itemName) {
         Item item = itemRepo.findByItemName(itemName);
         int itemPrice = item.getItemPrice();
-//        item.setCustomer(null);
-
         Customer customer = customerRepo.findByLoginName(loggedInCustomer);
         customer.setAvailableFunds(customer.getAvailableFunds() + itemPrice);
         customer.getBoughtItems().remove(item);
         customerRepo.save(customer);
+    }
 
-//        item.getCustomers().remove(customer);
-//        itemRepo.save(item);
+    public List<Item> getAllShopItems() {
+        return itemRepo.findAll();
     }
 }

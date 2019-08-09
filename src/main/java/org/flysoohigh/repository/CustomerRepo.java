@@ -19,7 +19,7 @@ public interface CustomerRepo extends JpaRepository<Customer, Long> {
 
     // FIXME: 04.08.2019 Наверно можно упростить через распознование имени метода самим Spring Data
     @Query(nativeQuery = true,
-    value = "SELECT logged_in " +
+    value = "SELECT c.logged_in " +
             "FROM customer c " +
             "WHERE c.login_name = :loginName")
     boolean isLoggedIn(@Param("loginName") String loginName);
@@ -38,7 +38,7 @@ public interface CustomerRepo extends JpaRepository<Customer, Long> {
             "WHERE c.login_name = :loginName")
     void logOut(@Param("loginName") String loginName);
 
-    // FIXME: 04.08.2019 Сделать Optional
+    // FIXME: 04.08.2019 Сделать Optional ?
     Customer findByLoginName(String loggedInCustomer);
 
     @Query(nativeQuery = true,
@@ -47,6 +47,4 @@ public interface CustomerRepo extends JpaRepository<Customer, Long> {
             "WHERE customer_customer_id = :customerId AND " +
                   "boughtitems_item_id = :itemId")
     boolean isBoughtItem(@Param("customerId") Long customerId, @Param("itemId") Long itemId);
-
-//    boolean findByLoginNameAndBoughtItems();
 }

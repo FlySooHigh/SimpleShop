@@ -7,11 +7,11 @@ import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.net.ServerSocket;
 
-public class Starter {
+public class ServerThread {
     public static void main(String[] args) throws JAXBException {
 
         if (args.length != 1) {
-            System.err.println("Usage: java Starter <port number>");
+            System.err.println("Usage: java ServerThread <port number>");
             System.exit(1);
         }
 
@@ -19,8 +19,6 @@ public class Starter {
         ImportDataService dataService = serverContext.getBean(ImportDataService.class);
         dataService.parseAndSaveItemsXml();
         dataService.saveSomeCustomers();
-
-        dataService.test();
 
         int portNumber = Integer.parseInt(args[0]);
         boolean listening = true;

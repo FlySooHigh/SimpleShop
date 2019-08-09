@@ -1,7 +1,13 @@
 package org.flysoohigh;
 
-import org.flysoohigh.model.Customer;
 import org.flysoohigh.service.ImportDataService;
+import org.flysoohigh.service.command.BuyService;
+import org.flysoohigh.service.command.MyInfoService;
+import org.flysoohigh.service.command.SellService;
+import org.flysoohigh.service.command.ViewShopService;
+import org.flysoohigh.service.login.LoginService;
+import org.flysoohigh.service.login.LoginServiceImpl;
+import org.flysoohigh.service.login.LogoutServiceImpl;
 import org.springframework.context.ApplicationContext;
 
 import java.io.BufferedReader;
@@ -19,6 +25,7 @@ public class CustomerThread extends Thread {
 
     // FIXME: 04.08.2019 Сделать в виде констант с состояниями ? Или в виде енума ?
     private List<String> availableCommands = Arrays.asList("login", "logout", "viewshop", "myinfo", "buy", "sell", "exit");
+    private ImportDataService dataService;
     private String loggedInCustomer = "";
 
     public CustomerThread(Socket socket, ApplicationContext context) {
@@ -32,105 +39,56 @@ public class CustomerThread extends Thread {
         try (PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))
         ) {
-            ImportDataService dataService = clientContext.getBean(ImportDataService.class);
+            dataService = clientContext.getBean(ImportDataService.class);
+            // FIXME: 08.08.2019 Попробовать засунуть в бины?
+            ViewShopService viewShopService = new ViewShopService(out, dataService);
+            LoginService loginService = new LoginServiceImpl(out, dataService);
+            LogoutServiceImpl logoutService = new LogoutServiceImpl(out, dataService);
+            MyInfoService myInfoService = new MyInfoService(out, dataService);
+            BuyService buyService = new BuyService(out, dataService);
+            SellService sellService = new SellService(out, dataService);
 
-            String inputLine;
+            String inputLine, command, parameter;
+            boolean keepGoing = true;
 
             out.println("Welcome to the SimpleShop!");
-            out.println("You have to login first...");
 
-            while ((inputLine = in.readLine()) != null) {
+            // FIXME: 08.08.2019 Не забыть переключиться на in-memory DB, написать тест!
+            while (keepGoing && (inputLine = in.readLine()) != null) {
 
                 inputLine = removeGarbageSymbols(inputLine);
-                // FIXME: 04.08.2019 Добавить объект Pair вместо parsedCommand? Из какой-нибудь коллекции
+
                 String[] parsedCommand = inputLine.split(" ");
+                if (parsedCommand.length > 2) {
+                    out.println("Command should consist of 2 words maximum");
+                }
 
                 if (!availableCommands.contains(parsedCommand[0])) {
                     out.println("Command is not in the list, try again");
                 }
 
-                if (parsedCommand[0].equals("login")) {
-                    // FIXME: 04.08.2019 Тут будет NPE, если не проверять параметры
-                    String loginName = parsedCommand[1];
-                    if (dataService.isCustomer(loginName)) {
-                        if (!loggedInCustomer.isEmpty()) {
-                            out.println("Another user is already logged in");
-                        } else if (!dataService.isLoggedIn(loginName)) {
-                            dataService.logIn(loginName);
-                            loggedInCustomer = loginName;
-                            out.println("Login successful");
-                        } else {
-                            out.println("You are already logged in");
-                        }
-                    } else {
-                        out.println("Such user is not registered. Enter existing user name.");
-                    }
+                switch (parsedCommand[0]){
+                    case "login":
+                        loggedInCustomer = loginService.handleInput(parsedCommand, loggedInCustomer);
+                        break;
+                    case "logout":
+                        loggedInCustomer = logoutService.handleInput(parsedCommand, loggedInCustomer);
+                        break;
+                    case "myinfo":
+                        myInfoService.handleInput(parsedCommand, loggedInCustomer);
+                        break;
+                    case "viewshop":
+                        viewShopService.handleInput(parsedCommand);
+                        break;
+                    case "buy":
+                        buyService.handleInput(parsedCommand, loggedInCustomer);
+                        break;
+                    case "sell":
+                        sellService.handleInput(parsedCommand, loggedInCustomer);
+                        break;
+                    case "exit":
+                        keepGoing = false;
                 }
-
-                if (parsedCommand[0].equals("logout")) {
-                    if (loggedInCustomer.isEmpty()) {
-                        out.println("You are not logged in");
-                    } else {
-                        dataService.logOut(loggedInCustomer);
-                        loggedInCustomer = "";
-                        out.println("Logout successful");
-                    }
-                }
-
-                if (parsedCommand[0].equals("myinfo")) {
-                    if (loggedInCustomer.isEmpty()) {
-                        out.println("You are not logged in");
-                    } else {
-                        Customer customerInfo = dataService.getInfo(loggedInCustomer);
-                        out.println(customerInfo.toString());
-                    }
-                }
-
-                if (parsedCommand[0].equals("buy")) {
-                    if (loggedInCustomer.isEmpty()) {
-                        out.println("You are not logged in");
-                    } else {
-                        // FIXME: 04.08.2019 Добавить проверку на null
-                        String itemName = parsedCommand[1];
-                        if (dataService.isInTheList(itemName)) {
-                            int customerFunds = dataService.getCustomerFunds(loggedInCustomer);
-                            int itemPrice = dataService.getItemPrice(itemName);
-                            if (customerFunds >= itemPrice) {
-                                dataService.buyItem(loggedInCustomer, itemName);
-                                out.println("Purchase is successful!");
-                            } else {
-                                out.println("Sorry, not enough funds to purchase this item");
-                            }
-                        } else {
-                            out.println("This item is not on the list");
-                        }
-                    }
-
-                }
-
-                if (parsedCommand[0].equals("sell")) {
-                    if (loggedInCustomer.isEmpty()) {
-                        out.println("You are not logged in");
-                    } else {
-                        // FIXME: 04.08.2019 Добавить проверку на null
-                        String itemName = parsedCommand[1];
-                        if (dataService.isInTheCustomerList(loggedInCustomer, itemName)) {
-                            dataService.sellItem(loggedInCustomer, itemName);
-                            out.println("Item sold successfully!");
-                        } else {
-                            out.println("This item is not in your bought items' list");
-                        }
-                    }
-
-                }
-
-                if (parsedCommand[0].equals("exit")) {
-                    if (!loggedInCustomer.isEmpty()) {
-                        dataService.logOut(loggedInCustomer);
-                    }
-                    break;
-                }
-
             }
             out.println("Socket will be closed");
             Thread.sleep(2000);
@@ -138,15 +96,13 @@ public class CustomerThread extends Thread {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-        // FIXME: 05.08.2019 если что-то пошло не так, то надо логаутить юзера из БД
-//        finally {
-//            dataService.logOut(loggedInCustomer);
-//        }
+        // логаутим юзера из БД, чтобы он не остался залогиненным при закрытии окна пользовательской сессии без команды logout
+        finally {
+            dataService.logOut(loggedInCustomer);
+        }
     }
 
     private String removeGarbageSymbols(String inputLine) {
         return inputLine.replaceAll("[^\\w\\s]", "").trim();
     }
-
-
 }

@@ -9,6 +9,9 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
 
+/**
+ * Этот класс нужен только для вычитки items.xml
+ */
 @Getter
 @Setter
 @XmlRootElement(name = "items")

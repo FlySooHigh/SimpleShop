@@ -45,12 +45,6 @@
             <artifactId>jaxb-core</artifactId>
             <version>2.2.8-b01</version>
         </dependency>
-        <dependency>
-            <groupId>hsqldb</groupId>
-            <artifactId>hsqldb</artifactId>
-            <version>1.8.0.7</version>
-        </dependency>
-
     </dependencies>
 
     <build>
