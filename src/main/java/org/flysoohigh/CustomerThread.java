@@ -1,13 +1,10 @@
 package org.flysoohigh;
 
 import org.flysoohigh.service.ImportDataService;
-import org.flysoohigh.service.command.BuyService;
-import org.flysoohigh.service.command.MyInfoService;
-import org.flysoohigh.service.command.SellService;
-import org.flysoohigh.service.command.ViewShopService;
+import org.flysoohigh.service.command.*;
+import org.flysoohigh.service.login.ILoginService;
 import org.flysoohigh.service.login.LoginService;
-import org.flysoohigh.service.login.LoginServiceImpl;
-import org.flysoohigh.service.login.LogoutServiceImpl;
+import org.flysoohigh.service.login.LogoutService;
 import org.springframework.context.ApplicationContext;
 
 import java.io.BufferedReader;
@@ -22,11 +19,13 @@ public class CustomerThread extends Thread {
 
     private Socket socket;
     private ApplicationContext clientContext;
+//    @Autowired
+//    private ViewShopService viewShopService;
 
     // FIXME: 04.08.2019 Сделать в виде констант с состояниями ? Или в виде енума ?
     private List<String> availableCommands = Arrays.asList("login", "logout", "viewshop", "myinfo", "buy", "sell", "exit");
     private ImportDataService dataService;
-    private String loggedInCustomer = "";
+    private String currentUser = "";
 
     public CustomerThread(Socket socket, ApplicationContext context) {
         super("CustomerThread");
@@ -41,12 +40,12 @@ public class CustomerThread extends Thread {
         ) {
             dataService = clientContext.getBean(ImportDataService.class);
             // FIXME: 08.08.2019 Попробовать засунуть в бины?
-            ViewShopService viewShopService = new ViewShopService(out, dataService);
-            LoginService loginService = new LoginServiceImpl(out, dataService);
-            LogoutServiceImpl logoutService = new LogoutServiceImpl(out, dataService);
-            MyInfoService myInfoService = new MyInfoService(out, dataService);
-            BuyService buyService = new BuyService(out, dataService);
-            SellService sellService = new SellService(out, dataService);
+            ICommandService viewShopService = new ViewShopService(out, dataService);
+            ILoginService loginService = new LoginService(out, dataService);
+            ILoginService logoutService = new LogoutService(out, dataService);
+            ICommandService myInfoService = new MyInfoService(out, dataService);
+            ICommandService buyService = new BuyService(out, dataService);
+            ICommandService sellService = new SellService(out, dataService);
 
             String inputLine, command, parameter;
             boolean keepGoing = true;
@@ -56,7 +55,7 @@ public class CustomerThread extends Thread {
             // FIXME: 08.08.2019 Не забыть переключиться на in-memory DB, написать тест!
             while (keepGoing && (inputLine = in.readLine()) != null) {
 
-                inputLine = removeGarbageSymbols(inputLine);
+                inputLine = clear(inputLine);
 
                 String[] parsedCommand = inputLine.split(" ");
                 if (parsedCommand.length > 2) {
@@ -69,22 +68,22 @@ public class CustomerThread extends Thread {
 
                 switch (parsedCommand[0]){
                     case "login":
-                        loggedInCustomer = loginService.handleInput(parsedCommand, loggedInCustomer);
+                        currentUser = loginService.handleInput(parsedCommand, currentUser);
                         break;
                     case "logout":
-                        loggedInCustomer = logoutService.handleInput(parsedCommand, loggedInCustomer);
+                        currentUser = logoutService.handleInput(parsedCommand, currentUser);
                         break;
                     case "myinfo":
-                        myInfoService.handleInput(parsedCommand, loggedInCustomer);
+                        myInfoService.handleInput(parsedCommand, currentUser);
                         break;
                     case "viewshop":
-                        viewShopService.handleInput(parsedCommand);
+                        viewShopService.handleInput(parsedCommand, currentUser);
                         break;
                     case "buy":
-                        buyService.handleInput(parsedCommand, loggedInCustomer);
+                        buyService.handleInput(parsedCommand, currentUser);
                         break;
                     case "sell":
-                        sellService.handleInput(parsedCommand, loggedInCustomer);
+                        sellService.handleInput(parsedCommand, currentUser);
                         break;
                     case "exit":
                         keepGoing = false;
@@ -96,15 +95,16 @@ public class CustomerThread extends Thread {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-        // логаутим юзера из БД, чтобы он не остался залогиненным при закрытии окна пользовательской сессии без команды logout
+        // логаутим юзера из БД, чтобы он не остался залогиненным при закрытии окна пользовательской сессии
+        // без команды logout
         finally {
-            if (!loggedInCustomer.isEmpty()) {
-                dataService.logOut(loggedInCustomer);
+            if (!currentUser.isEmpty()) {
+                dataService.logOut(currentUser);
             }
         }
     }
 
-    private String removeGarbageSymbols(String inputLine) {
+    private String clear(String inputLine) {
         return inputLine.replaceAll("[^\\w\\s]", "").trim();
     }
 }

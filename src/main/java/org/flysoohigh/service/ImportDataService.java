@@ -25,10 +25,13 @@ public class ImportDataService {
     @Autowired
     private CustomerRepo customerRepo;
 
-    public void parseAndSaveItemsXml() throws JAXBException {
+    public Items parseItemsXml() throws JAXBException {
         JAXBContext jaxbContext = JAXBContext.newInstance(Items.class);
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-        Items items = (Items) unmarshaller.unmarshal(new File("src\\main\\resources\\items.xml"));
+        return  (Items) unmarshaller.unmarshal(new File("src\\main\\resources\\items.xml"));
+    }
+
+    public void saveItems(Items items) {
         for (Item item: items.getItems()) {
             itemRepo.save(item);
         }
@@ -64,7 +67,7 @@ public class ImportDataService {
         return customerRepo.findByLoginName(loggedInCustomer);
     }
 
-    public boolean isInTheShopList(String item) {
+    public boolean isItemInShopList(String item) {
         return itemRepo.existsByItemName(item);
     }
 

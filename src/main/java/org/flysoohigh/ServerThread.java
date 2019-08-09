@@ -6,8 +6,11 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class ServerThread {
+
     public static void main(String[] args) throws JAXBException {
 
         if (args.length != 1) {
@@ -17,7 +20,7 @@ public class ServerThread {
 
         ClassPathXmlApplicationContext serverContext = new ClassPathXmlApplicationContext("classpath:/spring.xml");
         ImportDataService dataService = serverContext.getBean(ImportDataService.class);
-        dataService.parseAndSaveItemsXml();
+        dataService.saveItems(dataService.parseItemsXml());
         dataService.saveSomeCustomers();
 
         int portNumber = Integer.parseInt(args[0]);
@@ -25,14 +28,17 @@ public class ServerThread {
 
         try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
             System.out.println("ServerSocket started");
+            // FIXME: 09.08.2019 Правильное использование экзекьютора ? :)
+            ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
             while (listening) {
-                new CustomerThread(serverSocket.accept(), serverContext).start();
-                System.out.println("New connection started");
+                CustomerThread customerThread = new CustomerThread(serverSocket.accept(), serverContext);
+                executor.execute(customerThread);
+                System.out.println("New customer connected");
             }
             System.out.println("ServerSocket stopped");
         } catch (IOException e) {
             System.err.println("Could not listen on port " + portNumber);
-            System.exit(-1);
+            System.exit(1);
         }
     }
 

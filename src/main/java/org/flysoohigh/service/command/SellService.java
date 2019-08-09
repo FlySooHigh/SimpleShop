@@ -4,7 +4,8 @@ import org.flysoohigh.service.ImportDataService;
 
 import java.io.PrintWriter;
 
-public class SellService implements CommandService {
+//@Service
+public class SellService implements ICommandService {
     private PrintWriter out;
     private ImportDataService dataService;
 
@@ -15,24 +16,24 @@ public class SellService implements CommandService {
 
     @Override
     public void handleInput(String[] parsedCommand, String loggedInCustomer) {
-            if (loggedInCustomer.isEmpty()) {
-                out.println("You are not logged in");
-            } else {
-                if (parsedCommand.length < 2) {
-                    out.println("You have to specify item name that you want to sell");
-                } else {
-                    String itemName = parsedCommand[1];
-                    if (dataService.isInTheShopList(itemName)) {
-                        if (dataService.isInTheCustomerList(loggedInCustomer, itemName)) {
-                            dataService.sellItem(loggedInCustomer, itemName);
-                            out.println("Item sold successfully!");
-                        } else {
-                            out.println("This item is not in your bought items' list");
-                        }
-                    } else {
-                        out.println("This item is not in your bought items' list");
-                    }
-                }
-            }
+        if (loggedInCustomer.isEmpty()) {
+            out.println("You are not logged in");
+            return;
+        }
+        if (parsedCommand.length < 2) {
+            out.println("You have to specify item name that you want to sell");
+            return;
+        }
+        String itemName = parsedCommand[1];
+        if (!dataService.isItemInShopList(itemName)) {
+            out.println("This item is not in shop list, so you could not buy it");
+            return;
+        }
+        if (!dataService.isInTheCustomerList(loggedInCustomer, itemName)) {
+            out.println("This item is not in your bought items' list");
+            return;
+        }
+        dataService.sellItem(loggedInCustomer, itemName);
+        out.println("Item sold successfully!");
     }
 }

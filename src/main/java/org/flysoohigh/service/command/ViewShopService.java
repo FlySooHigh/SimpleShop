@@ -7,7 +7,8 @@ import java.io.PrintWriter;
 import java.util.List;
 import java.util.stream.IntStream;
 
-public class ViewShopService implements CommandService {
+//@Service
+public class ViewShopService implements ICommandService {
 
     private PrintWriter out;
     private ImportDataService dataService;
@@ -18,7 +19,7 @@ public class ViewShopService implements CommandService {
     }
 
     @Override
-    public void handleInput(String[] parsedCommand) {
+    public void handleInput(String[] parsedCommand, String loggedInCustomer) {
             List<Item> allShopItems = dataService.getAllShopItems();
             IntStream.range(0, allShopItems.size())
                      .forEach(i -> out.println(allShopItems.get(i).toString()));

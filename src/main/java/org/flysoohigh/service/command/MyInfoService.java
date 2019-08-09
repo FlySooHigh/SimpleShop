@@ -5,7 +5,8 @@ import org.flysoohigh.service.ImportDataService;
 
 import java.io.PrintWriter;
 
-public class MyInfoService implements CommandService {
+//@Service
+public class MyInfoService implements ICommandService {
 
     private PrintWriter out;
     private ImportDataService dataService;
@@ -16,12 +17,12 @@ public class MyInfoService implements CommandService {
     }
 
     @Override
-    public void handleInput(String[] parsedCommand, String loggedInCustomer) {
-            if (loggedInCustomer.isEmpty()) {
-                out.println("You are not logged in");
-            } else {
-                Customer customerInfo = dataService.getInfo(loggedInCustomer);
-                out.println(customerInfo.toString());
-            }
+    public void handleInput(String[] parsedCommand, String currentUser) {
+        if (currentUser.isEmpty()) {
+            out.println("You are not logged in");
+            return;
+        }
+        Customer customerInfo = dataService.getInfo(currentUser);
+        out.println(customerInfo.toString());
     }
 }
