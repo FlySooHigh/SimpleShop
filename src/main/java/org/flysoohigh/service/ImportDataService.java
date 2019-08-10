@@ -7,7 +7,7 @@ import org.flysoohigh.model.Items;
 import org.flysoohigh.repository.CustomerRepo;
 import org.flysoohigh.repository.ItemRepo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import javax.xml.bind.JAXBContext;
@@ -18,7 +18,8 @@ import java.util.Arrays;
 import java.util.List;
 
 @Getter
-@Component
+//@Component
+@Service
 public class ImportDataService {
     @Autowired
     private ItemRepo itemRepo;

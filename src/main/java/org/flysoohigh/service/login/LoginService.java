@@ -4,7 +4,6 @@ import org.flysoohigh.service.ImportDataService;
 
 import java.io.PrintWriter;
 
-//@Service
 public class LoginService implements ILoginService {
     private PrintWriter out;
     private ImportDataService dataService;
@@ -15,12 +14,11 @@ public class LoginService implements ILoginService {
     }
 
     @Override
-    public String handleInput(String[] parsedCommand, String currentUser) {
-        if (parsedCommand.length < 2) {
+    public String login(String newUser, String currentUser) {
+        if (newUser.isEmpty()) {
             out.println("You have to specify customer name after login");
             return currentUser;
         }
-        String newUser = parsedCommand[1];
         if (!dataService.isCustomer(newUser)) {
             out.println("Such user is not registered. Enter existing user name.");
             return currentUser;

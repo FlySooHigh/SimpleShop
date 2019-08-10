@@ -10,7 +10,8 @@ import org.springframework.stereotype.Repository;
 public interface ItemRepo extends JpaRepository<Item, Long> {
     boolean existsByItemName(String item);
 
-    // FIXME: 04.08.2019 Добавить Optional ?
+    // Можно было бы добавить Optional, но здесь в этом нет смысла, так как в качестве item передаются только
+    // реально существующие товары, а валидация несуществующих товаров происходит в BuyService и SellService
     Item findByItemName(String item);
 
     @Query(nativeQuery = true,

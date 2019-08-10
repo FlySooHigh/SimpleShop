@@ -1,4 +1,4 @@
-package org.flysoohigh.service.command;
+package org.flysoohigh.service.viewshop;
 
 import org.flysoohigh.model.Item;
 import org.flysoohigh.service.ImportDataService;
@@ -7,8 +7,7 @@ import java.io.PrintWriter;
 import java.util.List;
 import java.util.stream.IntStream;
 
-//@Service
-public class ViewShopService implements ICommandService {
+public class ViewShopService implements IViewShopService {
 
     private PrintWriter out;
     private ImportDataService dataService;
@@ -19,7 +18,7 @@ public class ViewShopService implements ICommandService {
     }
 
     @Override
-    public void handleInput(String[] parsedCommand, String loggedInCustomer) {
+    public void showItems() {
             List<Item> allShopItems = dataService.getAllShopItems();
             IntStream.range(0, allShopItems.size())
                      .forEach(i -> out.println(allShopItems.get(i).toString()));

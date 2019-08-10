@@ -10,14 +10,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CustomerRepo extends JpaRepository<Customer, Long> {
 
-    // FIXME: 04.08.2019 Наверно можно упростить через распознование имени метода самим Spring Data
     @Query(nativeQuery = true,
     value = "SELECT COUNT(*) = 1 " +
             "FROM customer c " +
             "WHERE c.login_name = :loginName")
     boolean existsByLoginName(@Param("loginName") String loginName);
 
-    // FIXME: 04.08.2019 Наверно можно упростить через распознование имени метода самим Spring Data
     @Query(nativeQuery = true,
     value = "SELECT c.logged_in " +
             "FROM customer c " +
@@ -38,7 +36,8 @@ public interface CustomerRepo extends JpaRepository<Customer, Long> {
             "WHERE c.login_name = :loginName")
     void logOut(@Param("loginName") String loginName);
 
-    // FIXME: 04.08.2019 Сделать Optional ?
+    //  Можно было бы добавить Optional, но здесь в этом нет смысла, так как в качестве loggedInCustomer
+    //  передаются только реально существующие юзеры, а валидация несуществующих юзеров происходит в LoginService
     Customer findByLoginName(String loggedInCustomer);
 
     @Query(nativeQuery = true,

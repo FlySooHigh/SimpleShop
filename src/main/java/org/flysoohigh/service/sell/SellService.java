@@ -1,11 +1,10 @@
-package org.flysoohigh.service.command;
+package org.flysoohigh.service.sell;
 
 import org.flysoohigh.service.ImportDataService;
 
 import java.io.PrintWriter;
 
-//@Service
-public class SellService implements ICommandService {
+public class SellService implements ISellService {
     private PrintWriter out;
     private ImportDataService dataService;
 
@@ -15,25 +14,20 @@ public class SellService implements ICommandService {
     }
 
     @Override
-    public void handleInput(String[] parsedCommand, String loggedInCustomer) {
-        if (loggedInCustomer.isEmpty()) {
+    public void sell(String itemToSell, String currentUser) {
+        if (currentUser.isEmpty()) {
             out.println("You are not logged in");
             return;
         }
-        if (parsedCommand.length < 2) {
-            out.println("You have to specify item name that you want to sell");
-            return;
-        }
-        String itemName = parsedCommand[1];
-        if (!dataService.isItemInShopList(itemName)) {
+        if (!dataService.isItemInShopList(itemToSell)) {
             out.println("This item is not in shop list, so you could not buy it");
             return;
         }
-        if (!dataService.isInTheCustomerList(loggedInCustomer, itemName)) {
+        if (!dataService.isInTheCustomerList(currentUser, itemToSell)) {
             out.println("This item is not in your bought items' list");
             return;
         }
-        dataService.sellItem(loggedInCustomer, itemName);
+        dataService.sellItem(currentUser, itemToSell);
         out.println("Item sold successfully!");
     }
 }

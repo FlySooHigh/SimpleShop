@@ -6,8 +6,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 public class ServerThread {
 
@@ -28,11 +26,8 @@ public class ServerThread {
 
         try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
             System.out.println("ServerSocket started");
-            // FIXME: 09.08.2019 Правильное использование экзекьютора ? :)
-            ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
             while (listening) {
-                CustomerThread customerThread = new CustomerThread(serverSocket.accept(), serverContext);
-                executor.execute(customerThread);
+                new CustomerThread(serverSocket.accept(), serverContext).start();
                 System.out.println("New customer connected");
             }
             System.out.println("ServerSocket stopped");

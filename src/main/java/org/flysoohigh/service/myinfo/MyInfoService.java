@@ -1,12 +1,11 @@
-package org.flysoohigh.service.command;
+package org.flysoohigh.service.myinfo;
 
 import org.flysoohigh.model.Customer;
 import org.flysoohigh.service.ImportDataService;
 
 import java.io.PrintWriter;
 
-//@Service
-public class MyInfoService implements ICommandService {
+public class MyInfoService implements IMyInfoService {
 
     private PrintWriter out;
     private ImportDataService dataService;
@@ -17,7 +16,7 @@ public class MyInfoService implements ICommandService {
     }
 
     @Override
-    public void handleInput(String[] parsedCommand, String currentUser) {
+    public void showInfo(String currentUser) {
         if (currentUser.isEmpty()) {
             out.println("You are not logged in");
             return;

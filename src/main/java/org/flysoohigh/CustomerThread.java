@@ -1,10 +1,18 @@
 package org.flysoohigh;
 
 import org.flysoohigh.service.ImportDataService;
-import org.flysoohigh.service.command.*;
+import org.flysoohigh.service.buy.BuyService;
+import org.flysoohigh.service.buy.IBuyService;
 import org.flysoohigh.service.login.ILoginService;
 import org.flysoohigh.service.login.LoginService;
-import org.flysoohigh.service.login.LogoutService;
+import org.flysoohigh.service.logout.ILogoutService;
+import org.flysoohigh.service.logout.LogoutService;
+import org.flysoohigh.service.myinfo.IMyInfoService;
+import org.flysoohigh.service.myinfo.MyInfoService;
+import org.flysoohigh.service.sell.ISellService;
+import org.flysoohigh.service.sell.SellService;
+import org.flysoohigh.service.viewshop.IViewShopService;
+import org.flysoohigh.service.viewshop.ViewShopService;
 import org.springframework.context.ApplicationContext;
 
 import java.io.BufferedReader;
@@ -12,22 +20,19 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.Arrays;
-import java.util.List;
 
 public class CustomerThread extends Thread {
 
+    private static final String EMPTY_STRING = "";
+
     private Socket socket;
     private ApplicationContext clientContext;
-//    @Autowired
-//    private ViewShopService viewShopService;
-
-    // FIXME: 04.08.2019 Сделать в виде констант с состояниями ? Или в виде енума ?
-    private List<String> availableCommands = Arrays.asList("login", "logout", "viewshop", "myinfo", "buy", "sell", "exit");
     private ImportDataService dataService;
-    private String currentUser = "";
 
-    public CustomerThread(Socket socket, ApplicationContext context) {
+    // вынесено сюда, чтобы можно было логаутить юзера в блоке finally
+    private String currentUser = EMPTY_STRING;
+
+    CustomerThread(Socket socket, ApplicationContext context) {
         super("CustomerThread");
         this.socket = socket;
         this.clientContext = context;
@@ -39,16 +44,19 @@ public class CustomerThread extends Thread {
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))
         ) {
             dataService = clientContext.getBean(ImportDataService.class);
-            // FIXME: 08.08.2019 Попробовать засунуть в бины?
-            ICommandService viewShopService = new ViewShopService(out, dataService);
+            IViewShopService viewShopService = new ViewShopService(out, dataService);
             ILoginService loginService = new LoginService(out, dataService);
-            ILoginService logoutService = new LogoutService(out, dataService);
-            ICommandService myInfoService = new MyInfoService(out, dataService);
-            ICommandService buyService = new BuyService(out, dataService);
-            ICommandService sellService = new SellService(out, dataService);
+            ILogoutService logoutService = new LogoutService(out, dataService);
+            IMyInfoService myInfoService = new MyInfoService(out, dataService);
+            IBuyService buyService = new BuyService(out, dataService);
+            ISellService sellService = new SellService(out, dataService);
 
-            String inputLine, command, parameter;
+            String inputLine;
+            String command = EMPTY_STRING;
+            String parameter = EMPTY_STRING;
+
             boolean keepGoing = true;
+            boolean validationPassed = false;
 
             out.println("Welcome to the SimpleShop!");
 
@@ -57,36 +65,50 @@ public class CustomerThread extends Thread {
 
                 inputLine = clear(inputLine);
 
-                String[] parsedCommand = inputLine.split(" ");
-                if (parsedCommand.length > 2) {
+                String[] parsedInput = inputLine.split("\\s+");
+
+                if (parsedInput.length > 2) {
                     out.println("Command should consist of 2 words maximum");
+                    validationPassed = false;
+                } else if (parsedInput.length == 2){
+                    command = parsedInput[0];
+                    parameter = parsedInput[1];
+                    validationPassed = true;
+                } else if (parsedInput.length == 1 && !parsedInput[0].isEmpty()) {
+                    command = parsedInput[0];
+                    parameter = EMPTY_STRING;
+                    validationPassed = true;
+                } else {
+                    out.println("You have to enter some command");
+                    validationPassed = false;
                 }
 
-                if (!availableCommands.contains(parsedCommand[0])) {
-                    out.println("Command is not in the list, try again");
-                }
-
-                switch (parsedCommand[0]){
-                    case "login":
-                        currentUser = loginService.handleInput(parsedCommand, currentUser);
-                        break;
-                    case "logout":
-                        currentUser = logoutService.handleInput(parsedCommand, currentUser);
-                        break;
-                    case "myinfo":
-                        myInfoService.handleInput(parsedCommand, currentUser);
-                        break;
-                    case "viewshop":
-                        viewShopService.handleInput(parsedCommand, currentUser);
-                        break;
-                    case "buy":
-                        buyService.handleInput(parsedCommand, currentUser);
-                        break;
-                    case "sell":
-                        sellService.handleInput(parsedCommand, currentUser);
-                        break;
-                    case "exit":
-                        keepGoing = false;
+                if (validationPassed) {
+                    switch (command) {
+                        case "login":
+                            currentUser = loginService.login(parameter, currentUser);
+                            break;
+                        case "logout":
+                            currentUser = logoutService.logout(currentUser);
+                            break;
+                        case "myinfo":
+                            myInfoService.showInfo(currentUser);
+                            break;
+                        case "viewshop":
+                            viewShopService.showItems();
+                            break;
+                        case "buy":
+                            buyService.buy(parameter, currentUser);
+                            break;
+                        case "sell":
+                            sellService.sell(parameter, currentUser);
+                            break;
+                        case "exit":
+                            keepGoing = false;
+                            break;
+                        default:
+                            out.println("Command is not in the list, try again");
+                    }
                 }
             }
             out.println("Socket will be closed");

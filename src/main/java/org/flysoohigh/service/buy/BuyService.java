@@ -1,11 +1,10 @@
-package org.flysoohigh.service.command;
+package org.flysoohigh.service.buy;
 
 import org.flysoohigh.service.ImportDataService;
 
 import java.io.PrintWriter;
 
-//@Service
-public class BuyService implements ICommandService {
+public class BuyService implements IBuyService {
     private PrintWriter out;
     private ImportDataService dataService;
 
@@ -15,27 +14,22 @@ public class BuyService implements ICommandService {
     }
 
     @Override
-    public void handleInput(String[] parsedCommand, String currentUser) {
+    public void buy(String itemToBuy, String currentUser) {
         if (currentUser.isEmpty()) {
             out.println("You are not logged in");
             return;
         }
-        if (parsedCommand.length < 2) {
-            out.println("You have to specify item name that you want to buy");
-            return;
-        }
-        String itemName = parsedCommand[1];
-        if (!dataService.isItemInShopList(itemName)) {
+        if (!dataService.isItemInShopList(itemToBuy)) {
             out.println("This item is not in the shop list");
             return;
         }
         int customerFunds = dataService.getCustomerFunds(currentUser);
-        int itemPrice = dataService.getItemPrice(itemName);
+        int itemPrice = dataService.getItemPrice(itemToBuy);
         if (itemPrice > customerFunds) {
             out.println("Sorry, not enough funds to purchase this item");
             return;
         }
-        dataService.buyItem(currentUser, itemName, itemPrice);
+        dataService.buyItem(currentUser, itemToBuy, itemPrice);
         out.println("Purchase is successful!");
     }
 }

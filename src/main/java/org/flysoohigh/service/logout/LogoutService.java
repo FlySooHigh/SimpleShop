@@ -1,11 +1,12 @@
-package org.flysoohigh.service.login;
+package org.flysoohigh.service.logout;
 
 import org.flysoohigh.service.ImportDataService;
 
 import java.io.PrintWriter;
 
-//@Service
-public class LogoutService implements ILoginService {
+public class LogoutService implements ILogoutService {
+
+    private static final String EMPTY_STRING = "";
 
     private PrintWriter out;
     private ImportDataService dataService;
@@ -15,14 +16,13 @@ public class LogoutService implements ILoginService {
         this.dataService = dataService;
     }
 
-    @Override
-    public String handleInput(String[] parsedCommand, String currentUser) {
+    public String logout(String currentUser) {
         if (currentUser.isEmpty()) {
             out.println("You are not logged in");
             return currentUser;
         }
         dataService.logOut(currentUser);
         out.println("Logout successful");
-        return "";
+        return EMPTY_STRING;
     }
 }
