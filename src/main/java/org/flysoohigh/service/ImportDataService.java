@@ -18,7 +18,6 @@ import java.util.Arrays;
 import java.util.List;
 
 @Getter
-//@Component
 @Service
 public class ImportDataService {
     @Autowired

@@ -19,6 +19,7 @@
     <!-- Scans for components that will be auto-registered as Spring beans -->
     <context:component-scan base-package="org.flysoohigh" />
     <context:component-scan base-package="org.flysoohigh.service" />
+    <context:component-scan base-package="org.flysoohigh.service.viewshop" />
     <!-- Scans for repositories that will be auto-registered -->
     <jpa:repositories base-package="org.flysoohigh.repository" />
     <!-- Activates various annotations to be detected in bean classes e.g: @Autowired -->

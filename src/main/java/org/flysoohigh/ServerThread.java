@@ -18,7 +18,9 @@ public class ServerThread {
 
         ClassPathXmlApplicationContext serverContext = new ClassPathXmlApplicationContext("classpath:/spring.xml");
         ImportDataService dataService = serverContext.getBean(ImportDataService.class);
+        // вычитываем items.xml и сохраняем предметы в БД
         dataService.saveItems(dataService.parseItemsXml());
+        // сохраним несколько юзеров, чтобы было кем логиниться
         dataService.saveSomeCustomers();
 
         int portNumber = Integer.parseInt(args[0]);

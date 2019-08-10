@@ -56,7 +56,7 @@ public class CustomerThread extends Thread {
             String parameter = EMPTY_STRING;
 
             boolean keepGoing = true;
-            boolean validationPassed = false;
+            boolean validationPassed;
 
             out.println("Welcome to the SimpleShop!");
 
