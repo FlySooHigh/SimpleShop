@@ -13,7 +13,7 @@ import javax.transaction.Transactional;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import java.io.File;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -28,7 +28,8 @@ public class ImportDataService {
     public Items parseItemsXml() throws JAXBException {
         JAXBContext jaxbContext = JAXBContext.newInstance(Items.class);
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-        return  (Items) unmarshaller.unmarshal(new File("src\\main\\resources\\items.xml"));
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream("items.xml");
+        return (Items) unmarshaller.unmarshal(inputStream);
     }
 
     public void saveItems(Items items) {
