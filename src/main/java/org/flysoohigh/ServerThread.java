@@ -7,6 +7,8 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ServerThread {
 
@@ -17,7 +19,6 @@ public class ServerThread {
         }
 
         AnnotationConfigApplicationContext serverContext = new AnnotationConfigApplicationContext(Config.class);
-
         ImportDataService dataService = serverContext.getBean(ImportDataService.class);
         // вычитываем items.xml и сохраняем предметы в БД
         dataService.saveItems(dataService.parseItemsXml());
@@ -26,17 +27,20 @@ public class ServerThread {
 
         int portNumber = Integer.parseInt(args[0]);
         boolean listening = true;
+        ExecutorService executorService = Executors.newCachedThreadPool();
 
         try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
             System.out.println("ServerSocket started");
             while (listening) {
-                new CustomerThread(serverSocket.accept(), serverContext).start();
+                executorService.submit(new CustomerThread(serverSocket.accept(), serverContext));
                 System.out.println("New customer connected");
             }
             System.out.println("ServerSocket stopped");
         } catch (IOException e) {
             System.err.println("Could not listen on port " + portNumber);
             System.exit(1);
+        } finally {
+            executorService.shutdown();
         }
     }
 }
