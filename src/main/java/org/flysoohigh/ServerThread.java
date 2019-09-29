@@ -1,7 +1,8 @@
 package org.flysoohigh;
 
+import org.flysoohigh.config.Config;
 import org.flysoohigh.service.ImportDataService;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
@@ -10,13 +11,13 @@ import java.net.ServerSocket;
 public class ServerThread {
 
     public static void main(String[] args) throws JAXBException {
-
         if (args.length != 1) {
             System.err.println("Usage: java ServerThread <port number>");
             System.exit(1);
         }
 
-        ClassPathXmlApplicationContext serverContext = new ClassPathXmlApplicationContext("classpath:/spring.xml");
+        AnnotationConfigApplicationContext serverContext = new AnnotationConfigApplicationContext(Config.class);
+
         ImportDataService dataService = serverContext.getBean(ImportDataService.class);
         // вычитываем items.xml и сохраняем предметы в БД
         dataService.saveItems(dataService.parseItemsXml());
@@ -38,6 +39,4 @@ public class ServerThread {
             System.exit(1);
         }
     }
-
-
 }
