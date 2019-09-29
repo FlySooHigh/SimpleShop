@@ -1,5 +1,7 @@
 package org.flysoohigh.service.login;
 
+import org.flysoohigh.util.Pair;
+
 public interface ILoginService {
-    String login(String newUser, String currentUser);
+    Pair<String, String> login(String newUser, String currentUser);
 }

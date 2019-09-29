@@ -1,33 +1,28 @@
 package org.flysoohigh.service.sell;
 
 import org.flysoohigh.service.ImportDataService;
+import org.springframework.stereotype.Service;
 
-import java.io.PrintWriter;
-
+@Service
 public class SellService implements ISellService {
-    private PrintWriter out;
     private ImportDataService dataService;
 
-    public SellService(PrintWriter out, ImportDataService dataService) {
-        this.out = out;
+    public SellService(ImportDataService dataService) {
         this.dataService = dataService;
     }
 
     @Override
-    public void sell(String itemToSell, String currentUser) {
+    public String sell(String itemToSell, String currentUser) {
         if (currentUser.isEmpty()) {
-            out.println("You are not logged in");
-            return;
+            return "You are not logged in";
         }
         if (!dataService.isItemInShopList(itemToSell)) {
-            out.println("This item is not in shop list, so you could not buy it");
-            return;
+            return "This item is not in shop list, so you could not buy it";
         }
         if (!dataService.isInTheCustomerList(currentUser, itemToSell)) {
-            out.println("This item is not in your bought items' list");
-            return;
+            return "This item is not in your bought items' list";
         }
         dataService.sellItem(currentUser, itemToSell);
-        out.println("Item sold successfully!");
+        return "Item sold successfully!";
     }
 }

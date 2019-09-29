@@ -1,5 +1,7 @@
 package org.flysoohigh.service.logout;
 
+import org.flysoohigh.util.Pair;
+
 public interface ILogoutService {
-    String logout(String currentUser);
+    Pair<String, String> logout(String currentUser);
 }

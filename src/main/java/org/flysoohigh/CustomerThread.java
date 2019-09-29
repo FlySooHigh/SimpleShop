@@ -1,18 +1,14 @@
 package org.flysoohigh;
 
+import org.flysoohigh.model.Item;
 import org.flysoohigh.service.ImportDataService;
-import org.flysoohigh.service.buy.BuyService;
 import org.flysoohigh.service.buy.IBuyService;
 import org.flysoohigh.service.login.ILoginService;
-import org.flysoohigh.service.login.LoginService;
 import org.flysoohigh.service.logout.ILogoutService;
-import org.flysoohigh.service.logout.LogoutService;
 import org.flysoohigh.service.myinfo.IMyInfoService;
-import org.flysoohigh.service.myinfo.MyInfoService;
 import org.flysoohigh.service.sell.ISellService;
-import org.flysoohigh.service.sell.SellService;
 import org.flysoohigh.service.viewshop.IViewShopService;
-import org.flysoohigh.service.viewshop.ViewShopService;
+import org.flysoohigh.util.Pair;
 import org.springframework.context.ApplicationContext;
 
 import java.io.BufferedReader;
@@ -20,6 +16,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.List;
+import java.util.stream.IntStream;
 
 public class CustomerThread extends Thread {
 
@@ -44,12 +42,13 @@ public class CustomerThread extends Thread {
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))
         ) {
             dataService = clientContext.getBean(ImportDataService.class);
-            IViewShopService viewShopService = new ViewShopService(out, dataService);
-            ILoginService loginService = new LoginService(out, dataService);
-            ILogoutService logoutService = new LogoutService(out, dataService);
-            IMyInfoService myInfoService = new MyInfoService(out, dataService);
-            IBuyService buyService = new BuyService(out, dataService);
-            ISellService sellService = new SellService(out, dataService);
+
+            IViewShopService viewShopService = clientContext.getBean(IViewShopService.class);
+            ILoginService loginService = clientContext.getBean(ILoginService.class);
+            ILogoutService logoutService = clientContext.getBean(ILogoutService.class);
+            IMyInfoService myInfoService = clientContext.getBean(IMyInfoService.class);
+            IBuyService buyService = clientContext.getBean(IBuyService.class);
+            ISellService sellService = clientContext.getBean(ISellService.class);
 
             String inputLine;
             String command = EMPTY_STRING;
@@ -60,7 +59,6 @@ public class CustomerThread extends Thread {
 
             out.println("Welcome to the SimpleShop!");
 
-            // FIXME: 08.08.2019 Не забыть переключиться на in-memory DB, написать тест!
             while (keepGoing && (inputLine = in.readLine()) != null) {
 
                 inputLine = clear(inputLine);
@@ -86,22 +84,28 @@ public class CustomerThread extends Thread {
                 if (validationPassed) {
                     switch (command) {
                         case "login":
-                            currentUser = loginService.login(parameter, currentUser);
+                            Pair<String, String> loginResult = loginService.login(parameter, currentUser);
+                            currentUser = loginResult.getUser();
+                            out.println(loginResult.getMessage());
                             break;
                         case "logout":
-                            currentUser = logoutService.logout(currentUser);
+                            Pair<String, String> logoutResult = logoutService.logout(currentUser);
+                            currentUser = logoutResult.getUser();
+                            out.println(logoutResult.getMessage());
                             break;
                         case "myinfo":
-                            myInfoService.showInfo(currentUser);
+                            out.println(myInfoService.showInfo(currentUser));
                             break;
                         case "viewshop":
-                            viewShopService.showItems();
+                            List<Item> items = viewShopService.showItems();
+                            IntStream.range(0, items.size())
+                                     .forEach(i -> out.println(items.get(i).toString()));
                             break;
                         case "buy":
-                            buyService.buy(parameter, currentUser);
+                            out.println(buyService.buy(parameter, currentUser));
                             break;
                         case "sell":
-                            sellService.sell(parameter, currentUser);
+                            out.println(sellService.sell(parameter, currentUser));
                             break;
                         case "exit":
                             keepGoing = false;

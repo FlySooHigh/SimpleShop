@@ -2,26 +2,22 @@ package org.flysoohigh.service.myinfo;
 
 import org.flysoohigh.model.Customer;
 import org.flysoohigh.service.ImportDataService;
+import org.springframework.stereotype.Service;
 
-import java.io.PrintWriter;
-
+@Service
 public class MyInfoService implements IMyInfoService {
-
-    private PrintWriter out;
     private ImportDataService dataService;
 
-    public MyInfoService(PrintWriter out, ImportDataService dataService) {
-        this.out = out;
+    public MyInfoService(ImportDataService dataService) {
         this.dataService = dataService;
     }
 
     @Override
-    public void showInfo(String currentUser) {
+    public String showInfo(String currentUser) {
         if (currentUser.isEmpty()) {
-            out.println("You are not logged in");
-            return;
+            return "You are not logged in";
         }
         Customer customerInfo = dataService.getInfo(currentUser);
-        out.println(customerInfo.toString());
+        return customerInfo.toString();
     }
 }

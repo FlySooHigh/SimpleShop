@@ -2,25 +2,20 @@ package org.flysoohigh.service.viewshop;
 
 import org.flysoohigh.model.Item;
 import org.flysoohigh.service.ImportDataService;
+import org.springframework.stereotype.Service;
 
-import java.io.PrintWriter;
 import java.util.List;
-import java.util.stream.IntStream;
 
+@Service
 public class ViewShopService implements IViewShopService {
-
-    private PrintWriter out;
     private ImportDataService dataService;
 
-    public ViewShopService(PrintWriter out, ImportDataService dataService) {
-        this.out = out;
+    public ViewShopService(ImportDataService dataService) {
         this.dataService = dataService;
     }
 
     @Override
-    public void showItems() {
-            List<Item> allShopItems = dataService.getAllShopItems();
-            IntStream.range(0, allShopItems.size())
-                     .forEach(i -> out.println(allShopItems.get(i).toString()));
+    public List<Item> showItems() {
+            return dataService.getAllShopItems();
     }
 }
